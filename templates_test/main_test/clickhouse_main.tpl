@@ -2,8 +2,8 @@ import (
 	"bytes"
 	"database/sql"
 	"fmt"
+	"net/url"
 	"os/exec"
-	"strings"
 
 	"github.com/spf13/viper"
 	"github.com/volatiletech/sqlboiler/bdb/drivers"
@@ -51,13 +51,13 @@ func (m *clickhouseTester) setup() error {
 }
 
 func (m *clickhouseTester) createTestDB() error {
-	sql := fmt.Sprintf("create database %s;", m.testDBName)
-	return m.runCmd(sql, "clickhouse-client")
+	sql := fmt.Sprintf("create database %s", m.testDBName)
+	return m.runQuery(sql)
 }
 
 func (m *clickhouseTester) dropTestDB() error {
-	sql := fmt.Sprintf("drop database if exists %s;", m.testDBName)
-	return m.runCmd(sql, "clickhouse-client")
+	sql := fmt.Sprintf("drop database if exists %s", m.testDBName)
+	return m.runQuery(sql)
 }
 
 func (m *clickhouseTester) teardown() error {
@@ -72,16 +72,25 @@ func (m *clickhouseTester) teardown() error {
 	return nil
 }
 
-func (m *clickhouseTester) runCmd(stdin, command string, args ...string) error {
-	cmd := exec.Command(command, args...)
-	cmd.Stdin = strings.NewReader(stdin)
+func (m *clickhouseTester) runQuery(q string) error {
+	u, err := url.Parse("http://localhost:8123/")
+	if err != nil {
+		return fmt.Errorf("parsing url failed: %s", err)
+	}
+
+	query := u.Query()
+	query.Set("query", q)
+
+	u.RawQuery = query.Encode()
+
+	cmd := exec.Command("wget", "--method", "POST", "--content-on-error", "-qO-", u.String())
 
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
 	if err := cmd.Run(); err != nil {
-		fmt.Println("failed running:", command, args)
+		fmt.Println("failed running:", q)
 		fmt.Println(stdout.String())
 		fmt.Println(stderr.String())
 		return err
