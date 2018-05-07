@@ -18,9 +18,10 @@ type Config struct {
 	Wipe             bool
 	StructTagCasing  string
 
-	Postgres PostgresConfig
-	MySQL    MySQLConfig
-	MSSQL    MSSQLConfig
+	Postgres   PostgresConfig
+	MySQL      MySQLConfig
+	MSSQL      MSSQLConfig
+	Clickhouse ClickhouseConfig
 }
 
 // PostgresConfig configures a postgres database
@@ -51,4 +52,22 @@ type MSSQLConfig struct {
 	Port    int
 	DBName  string
 	SSLMode string
+}
+
+// ClickhouseConfig configures a clickhouse database
+type ClickhouseConfig struct {
+	Username               string
+	Password               string
+	Database               string
+	Host                   string
+	Port                   int
+	ReadTimeout            int
+	WriteTimeout           int
+	NoDelay                bool
+	AltHosts               []string
+	ConnectionOpenStrategy string
+	BlockSize              int
+	Debug                  bool
+	Secure                 bool
+	SkipVerify             bool
 }

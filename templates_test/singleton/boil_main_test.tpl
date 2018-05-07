@@ -143,5 +143,13 @@ func validateConfig(driverName string) error {
 		).Check()
 	}
 
+	if driverName == "clickhouse" {
+		return vala.BeginValidation().Validate(
+			vala.StringNotEmpty(viper.GetString("clickhouse.host"), "clickhouse.host"),
+			vala.Not(vala.Equals(viper.GetInt("clickhouse.port"), 0, "clickhouse.port")),
+			vala.StringNotEmpty(viper.GetString("clickhouse.database"), "clickhouse.database"),
+		).Check()
+	}
+
 	return errors.New("not a valid driver name")
 }

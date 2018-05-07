@@ -316,6 +316,25 @@ func (s *State) initDriver(driverName string) error {
 			s.Config.MSSQL.Port,
 			s.Config.MSSQL.SSLMode,
 		)
+	case "clickhouse":
+		s.Driver = drivers.NewClickhouseDriver(
+			drivers.ClickhouseDriverConfig{
+				Username:               s.Config.Clickhouse.Username,
+				Password:               s.Config.Clickhouse.Password,
+				Database:               s.Config.Clickhouse.Database,
+				Host:                   s.Config.Clickhouse.Host,
+				Port:                   s.Config.Clickhouse.Port,
+				ReadTimeout:            s.Config.Clickhouse.ReadTimeout,
+				WriteTimeout:           s.Config.Clickhouse.WriteTimeout,
+				Nagle:                  !s.Config.Clickhouse.NoDelay,
+				AltHosts:               s.Config.Clickhouse.AltHosts,
+				ConnectionOpenStrategy: s.Config.Clickhouse.ConnectionOpenStrategy,
+				BlockSize:              s.Config.Clickhouse.BlockSize,
+				Debug:                  s.Config.Clickhouse.Debug,
+				Secure:                 s.Config.Clickhouse.Secure,
+				SkipVerify:             s.Config.Clickhouse.SkipVerify,
+			},
+		)
 	case "mock":
 		s.Driver = &drivers.MockDriver{}
 	}

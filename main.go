@@ -98,6 +98,10 @@ func main() {
 	viper.SetDefault("mysql.port", "3306")
 	viper.SetDefault("mssql.sslmode", "true")
 	viper.SetDefault("mssql.port", "1433")
+	viper.SetDefault("clickhouse.secure", true)
+	viper.SetDefault("clickhouse.skip_verify", false)
+	viper.SetDefault("clickhouse.port", 9000)
+	viper.SetDefault("clickhouse.no_delay", true)
 
 	viper.BindPFlags(rootCmd.PersistentFlags())
 	viper.AutomaticEnv()
@@ -296,6 +300,38 @@ func preRun(cmd *cobra.Command, args []string) error {
 			vala.Not(vala.Equals(cmdConfig.MSSQL.Port, 0, "mssql.port")),
 			vala.StringNotEmpty(cmdConfig.MSSQL.DBName, "mssql.dbname"),
 			vala.StringNotEmpty(cmdConfig.MSSQL.SSLMode, "mssql.sslmode"),
+		).Check()
+
+		if err != nil {
+			return commandFailure(err.Error())
+		}
+	}
+
+	if driverName == "clickhouse" {
+		cmdConfig.Clickhouse = boilingcore.ClickhouseConfig{
+			Username:               viper.GetString("clickhouse.username"),
+			Password:               viper.GetString("clickhouse.password"),
+			Database:               viper.GetString("clickhouse.database"),
+			Host:                   viper.GetString("clickhouse.host"),
+			Port:                   viper.GetInt("clickhouse.port"),
+			ReadTimeout:            viper.GetInt("clickhouse.read_timeout"),
+			WriteTimeout:           viper.GetInt("clickhouse.write_timeout"),
+			NoDelay:                viper.GetBool("clickhouse.no_delay"),
+			AltHosts:               viper.GetStringSlice("clickhouse.alt_hosts"),
+			ConnectionOpenStrategy: viper.GetString("clickhouse.connection_open_strategy"),
+			BlockSize:              viper.GetInt("clickhouse.block_size"),
+			Debug:                  viper.GetBool("clickhouse.debug"),
+			Secure:                 viper.GetBool("clickhouse.secure"),
+			SkipVerify:             viper.GetBool("clickhouse.skip_verify"),
+		}
+
+		// Clickhouse doesn't have schemas, just databases
+		cmdConfig.Schema = cmdConfig.Clickhouse.Database
+
+		err = vala.BeginValidation().Validate(
+			vala.StringNotEmpty(cmdConfig.Clickhouse.Host, "clickhouse.host"),
+			vala.Not(vala.Equals(cmdConfig.Clickhouse.Port, 0, "clickhouse.port")),
+			vala.StringNotEmpty(cmdConfig.Clickhouse.Database, "clickhouse.database"),
 		).Check()
 
 		if err != nil {
