@@ -322,7 +322,9 @@ func (m *ClickhouseDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 		c.Type = "float64"
 	case "Date", "DateTime":
 		c.Type = "time.Time"
-	case "FixedString", "String":
+	case "FixedString":
+		c.Type = "types.FixedString"
+	case "String":
 		c.Type = "string"
 	default:
 		c.Type = "[]byte"

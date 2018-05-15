@@ -383,6 +383,9 @@ func newImporter() importer {
 		"types.Hstore": {
 			thirdParty: importList{`"github.com/volatiletech/sqlboiler/types"`},
 		},
+		"types.FixedString": {
+			thirdParty: importList{`"github.com/volatiletech/sqlboiler/types"`},
+		},
 	}
 
 	return imp
